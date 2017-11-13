@@ -1,0 +1,52 @@
+{% extends "layout.html.twig"%}
+
+{% block title %}Word List{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="hidden-sm-down col-md-6">
+    <h1>Word List</h1>
+  </div>
+  <div class="col-sm-12 col-md-6">
+    <form class="form-inline mt-2 mr-0" action="" method="">
+      <div class="input-group mr-0">
+        <input type="text" class="form-control" name="searchWord" value="" placeholder="Search for...">
+        <span class="input-group-btn">
+          <button type="button" name="button" class="btn btn-secondary"><i class="fa fa-search"></i></button>
+        </span>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="row">
+  <table class="table table-striped">
+  <thead class="thead-inverse">
+    <tr>
+      <th>#</th>
+      <th>Word</th>
+      <th>Kana</th>
+      <th>Translation</th>
+      <th>actions</th>
+    </tr>
+  </thead>
+  <tbody>
+
+  {% for word in words %}
+        <tr>
+          <th scope="row">{{ word.word_id}}</th>
+          <td>{{ word.word }}</td>
+          <td>{{ word.kana }}</td>
+          <td>{{ word.translation }}</td>
+          <td>
+            <a href="{{ path('word-details', {'id': word.word_id }) }}" class="btn btn-secondary btn-sm" role="button">Details</a>
+          </td>
+        </tr>
+  {% endfor %}
+
+
+      </tbody>
+  </table>
+</div>
+
+{% endblock %}
