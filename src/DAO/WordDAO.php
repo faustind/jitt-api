@@ -27,17 +27,24 @@ class WordDAO extends DAO {
       return $this->buildDomainObject($row);
     } else {
       throw new \Exception("No Word Matching id " . $id, 1);
-
     }
   }
-  public function findWord($word){
-    $sql = "select * from words where word = ?";
-    $row = $this->getDB()->fetchAssoc($sql, array($word));
-    if($row){
-      return $this->buildDomainObject($row);
+
+  public function findMatch($word){
+    $find = $this->getDB()->prepare("select * from words where word = :wd or kana = :wd or translation = :wd");
+    $find->execute(array(':wd' => $word));
+    $results = $find->fetchAll();
+
+    if($results){
+      $words = array();
+      foreach ($results as $row) {
+        $word_id = $row["word_id"];
+        $words[$word_id] = $this->buildDomainObject($row);
+      }
+      return $words;
+
     } else {
       throw new \Exception("No Word Matching " . $word, 1);
-
     }
   }
 
@@ -67,20 +74,31 @@ class WordDAO extends DAO {
     $formerTags = $word->getFormerTags();
 
     // all of the new tags that weren't present
-    if (!empty($newTags)){
-      $tagsToInsertForWord = array_diff($newTags, $formerTags);
-    }
+    if (!empty($newTags) && empty($formerTags)){
+      // insert newTags and remove nothing
+      $tagsToInsertForWord = $newTags;
+      $tagsToRemoveForWord = array();
 
+    } else if(!empty($newTags) && !empty($formerTags)) {
+      // insert tags in newTags not in formerTags
+      $tagsToInsertForWord = $this->tagsDifference($newTags, $formerTags);
+      // remove tags in formerTags not in newTags
+      $tagsToRemoveForWord = $this->tagsDifference($formerTags, $newTags);
 
-    // all tags that have been removed in the new selection
-    if (!empty($formerTags)){
-        $tagsToRemoveForWord = array_diff($formerTags, $newTags);
+    } else if(empty($newTags) && !empty($formerTags)) {
+      // insert nothing and remove all former tags
+      $tagsToInsertForWord = array();
+      $tagsToRemoveForWord = $formerTags;
+    } else if(empty($newTags) && empty($formerTags)) {
+      // nothing to do
     }
 
 
     if (!empty($tagsToRemoveForWord)){
       foreach ($tagsToRemoveForWord as $tag) {
-        $delete = $this->getDb()->prepare('delete from word_tag where word_id = :word_id and tag_id = :tag_id');
+        $delete = $this->getDb()
+          ->prepare('delete from word_tag
+                    where word_id = :word_id and tag_id = :tag_id');
 
         $delete->execute(array(
           'word_id' => $word->getWord_id(),
@@ -104,6 +122,19 @@ class WordDAO extends DAO {
       }
 
     }
+  }
+
+  /**
+  * return elements in tags1 not present in tags2
+  */
+  private function tagsDifference($tags1, $tags2){
+    $diff=array();
+         foreach($tags1 as $t1){
+             if(!in_array($t1,$tags2)){
+                 array_push($diff,$t1);
+             }
+         }
+         return $diff;
   }
 
   protected function buildDomainObject(array $row) {

@@ -25,8 +25,12 @@ $app->match('/word-detail/{id}', function ($id, Request $request) use ($app){
       $app['session']->getFlashBag()->add('success', 'The word was successfully updated.');
     }
     return $app['twig']->render('word-details.html.twig',array(
-      'word' => $word,
-      'dbtags' => $app['dao.tag']->findAll(),
+      // 'word' => $word,
+      // 'dbtags' => $app['dao.tag']->findAll(),
       'wordForm' => $wordForm->createView()
     ));
 })->bind('word-details');
+
+
+// routes definitions for the api
+include ('api_routes.php');

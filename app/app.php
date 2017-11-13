@@ -25,3 +25,8 @@ $app['dao.word'] = function ($app) {
 $app['dao.tag'] = function ($app) {
     return new Jitt\DAO\TagDAO($app['db']);
 };
+$app['dao.definition'] = function ($app) {
+    $definitionDAO = new Jitt\DAO\DefinitionDAO($app['db']);
+    $definitionDAO->setWordDAO($app['dao.word']);
+    return $definitionDAO;
+};

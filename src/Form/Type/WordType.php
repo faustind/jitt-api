@@ -16,7 +16,9 @@ class WordType extends AbstractType
   public function buildForm(FormBuilderInterface $builder, array $options){
     $builder
     ->add('word', TextType::class)
-    ->add('kana', TextType::class)
+    ->add('kana', TextType::class, array(
+      'required' => false
+    ))
     ->add('translation', TextType::class);
 
     $tags = array(); // all tags in database

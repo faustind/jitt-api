@@ -25,7 +25,7 @@ class TagDAO extends DAO
 
     public function findById($id){
       $sql = "select * from tags where tag_id = ?";
-      $row = $this->getDB()->fetchAssoc($sql, array($id));
+      $row = $this->getDB()->fetchAll($sql, array($id));
       if($row){
         return $this->buildDomainObject($row);
       } else {

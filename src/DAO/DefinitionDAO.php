@@ -2,7 +2,7 @@
 
 namespace Jitt\DAO;
 
-use Jitt\Domain\Word;
+use Jitt\Domain\Definition;
 
 class DefinitionDAO extends DAO {
 
@@ -12,27 +12,83 @@ class DefinitionDAO extends DAO {
     $this->wordDAO = $WordDAO;
   }
 
-  public function findAllByWord($wordId){
+  public function findAllForWord($wordId){
     $sql = "select * from definitions where word_id = ? group by language";
-    $results = $this->getDb()->fetchAll($sql);
+    $results = $this->getDb()->fetchAll($sql, array($wordId));
 
-    $words = array();
+    $definitons = array();
+    $word = $this->wordDAO->find($wordId);
 
     foreach ($results as $row) {
-      $word_id = $row["word_id"];
-      $words[$word_id] = $this->buildWord($row);
+      $id = $row["id"];
+      $row["word"] = $word;
+      $definitions[$id] = $this->buildDomainObject($row);
     }
-    return $words;
+
+    // next, group definitions by language
+
+    $jpDefs = array();
+    $engDefs = array();
+
+    foreach ($definitions as $definition) {
+      if ($definition->getLanguage() == 'japanese'){
+        $jpDefs[] = $definition;
+      } else {
+        $engDefs[] = $definition;
+      }
+    }
+
+
+
+    $definitions = array(
+      'eng_definitions' => $engDefs,
+      'jp_definitions'  => $jpDefs
+    );
+
+    // return definitions grouped by language
+    return $definitions;
+  }
+
+  public function find($id){
+    $sql = "select * from definitions where id = ?";
+    $row = $this->getDB()->fetchAssoc($sql, array($id));
+    if($row){
+      return $this->buildDomainObject($row);
+    } else {
+      throw new \Exception("No Definition Matching id " . $id, 1);
+    }
+  }
+
+  public function incrementLikes($definitionId){
+    $increment = $this->getDb()->prepare('update definitions
+      set likes = likes + 1
+      where id = ?');
+
+      $incremented = $increment->execute(array($definitionId));
+
+      if ($incremented){
+        try {
+          $def = $this->find($definitionId);
+          return $def->getLikes();
+        } catch (\Exception $e){
+          return null;
+        }
+      } else {
+        return null;
+      }
   }
 
   protected function buildDomainObject(array $row) {
-    $word = new Word();
-    $word->setWord_id($row["word_id"]);
-    $word->setWord($row["word"]);
-    $word->setKana($row["kana"]);
-    $word->setTranslation($row["translation"]);
-    $word->setSaved_date($row["saved_date"]);
+    $definition = new Definition();
 
-    return $word;
+    $definition->setId($row["id"]);
+    $definition->setWord($row["word"]);
+    $definition->setContent($row["content"]);
+    $definition->setLanguage($row["language"]);
+    $definition->setSource($row["source"]);
+    $definition->setLikes($row["likes"]);
+    $definition->setSaved_date($row["saved_date"]);
+
+    return $definition;
   }
 }
