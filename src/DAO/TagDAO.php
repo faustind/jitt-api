@@ -4,13 +4,13 @@ namespace Jitt\DAO;
 
 use Jitt\Domain\Tag;
 
-/**
- *
- */
 class TagDAO extends DAO
 {
-    public function findAll()
-    {
+    /**
+     * Finds all the tags in the db
+     * @return Jitt\Domain\Tag[]
+    */
+    public function findAll() {
       $sql = "select * from tags";
       $results = $this->getDb()->fetchAll($sql);
 
@@ -23,17 +23,26 @@ class TagDAO extends DAO
       return $tags;
     }
 
-    public function findById($id){
+    /**
+     * Finds a tag with id $id or throw an Exception
+     * @param int the id of the tag to look for in db
+     * @return Jitt\Domain\Tag[]|\Exception
+    */
+    public function findById($id) {
       $sql = "select * from tags where tag_id = ?";
       $row = $this->getDB()->fetchAll($sql, array($id));
       if($row){
         return $this->buildDomainObject($row);
       } else {
-        throw new \Exception("No Tgg Matching id " . $id, 1);
-
+        throw new \Exception("No Tag Matching id " . $id, 1);
       }
     }
 
+    /**
+     * Finds all tags for a given wordDAO
+     * @param int id of the word for which to get findTagsForWordId
+     * @return Jitt\Domain\Tag[]
+    */
     public function findTagsForWordId($wordId){
       $sql = "select tags.*
               from tags
@@ -51,8 +60,9 @@ class TagDAO extends DAO
       return $tags;
     }
 
-
-
+    /**
+     * @inheritDoc
+    */
     public function buildDomainObject(array $row)
     {
       $tag = new Tag();

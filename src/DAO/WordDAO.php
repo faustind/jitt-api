@@ -6,7 +6,10 @@ use Jitt\Domain\Word;
 
 class WordDAO extends DAO {
 
-
+  /**
+   * Finds all words in db
+   * @return Jitt\Domain\Word[]
+  */
   public function findAll(){
     $sql = "select * from words order by word_id";
     $results = $this->getDb()->fetchAll($sql);
@@ -20,6 +23,12 @@ class WordDAO extends DAO {
     return $words;
   }
 
+  /**
+   * Finds the word with matching $id
+   * raise an exception if no match found
+   * @param int $id
+   * @return Jitt\Domain\Word
+  */
   public function find($id){
     $sql = "select * from words where word_id = ?";
     $row = $this->getDB()->fetchAssoc($sql, array($id));
@@ -30,6 +39,11 @@ class WordDAO extends DAO {
     }
   }
 
+  /**
+   * Finds all words with word | kana | translation matching $word
+   * @param string
+   * @return Jitt\Domain\Word[]
+  */
   public function findMatch($word){
     $find = $this->getDB()->prepare("select * from words where word = :wd or kana = :wd or translation = :wd");
     $find->execute(array(':wd' => $word));
@@ -48,6 +62,10 @@ class WordDAO extends DAO {
     }
   }
 
+  /**
+   * Saves the word in db. if the word has an id, update it.
+   * @param Jitt\Domain\Word
+  */
   public function saveWord($word){
     $wordData = array(
       'word' => $word->getWord(),
@@ -93,7 +111,7 @@ class WordDAO extends DAO {
       // nothing to do
     }
 
-
+    // remove word_tag references for tags to remove
     if (!empty($tagsToRemoveForWord)){
       foreach ($tagsToRemoveForWord as $tag) {
         $delete = $this->getDb()
@@ -108,6 +126,7 @@ class WordDAO extends DAO {
       }
     }
 
+    // insert word_tag references for tags to insert
     if (!empty($tagsToInsertForWord)){
       foreach ($tagsToInsertForWord as $tag) {
         $insert = $this->getDb()
@@ -125,7 +144,10 @@ class WordDAO extends DAO {
   }
 
   /**
-  * return elements in tags1 not present in tags2
+  * Returns an array of elements in tags1 not present in tags2
+  * @param Jitt\Domain\Tag[] $tag1
+  * @param Jitt\Domain\Tag[] $tag2
+  * @return Jitt\Domain\Tag[]
   */
   private function tagsDifference($tags1, $tags2){
     $diff=array();
@@ -137,6 +159,9 @@ class WordDAO extends DAO {
          return $diff;
   }
 
+  /**
+   * @inheritDoc
+  */
   protected function buildDomainObject(array $row) {
     $word = new Word();
     $word->setWord_id($row["word_id"]);

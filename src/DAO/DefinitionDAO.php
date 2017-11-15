@@ -12,6 +12,11 @@ class DefinitionDAO extends DAO {
     $this->wordDAO = $WordDAO;
   }
 
+  /**
+   * Finds all definitions for a word
+   * @param int the id of the word which definitions to look for
+   * @return Jitt\Domain\Definition[]
+  */
   public function findAllForWord($wordId){
     $sql = "select * from definitions where word_id = ? group by language";
     $results = $this->getDb()->fetchAll($sql, array($wordId));
@@ -25,7 +30,7 @@ class DefinitionDAO extends DAO {
       $definitions[$id] = $this->buildDomainObject($row);
     }
 
-    // next, group definitions by language
+    // group definitions by language
 
     $jpDefs = array();
     $engDefs = array();
@@ -49,6 +54,11 @@ class DefinitionDAO extends DAO {
     return $definitions;
   }
 
+  /**
+   * Finds a definition by is id
+   * @param int the id of the definition to look for
+   * @return Jitt\Domain\Definition
+  */
   public function find($id){
     $sql = "select * from definitions where id = ?";
     $row = $this->getDB()->fetchAssoc($sql, array($id));
@@ -59,6 +69,11 @@ class DefinitionDAO extends DAO {
     }
   }
 
+  /**
+   * Increments the definitions.likes column in the db
+   * and return the updated value or null if no definition matches $definitionId
+   * @return int|null
+  */
   public function incrementLikes($definitionId){
     $increment = $this->getDb()->prepare('update definitions
       set likes = likes + 1
@@ -78,6 +93,9 @@ class DefinitionDAO extends DAO {
       }
   }
 
+  /**
+   * @inheritDoc
+  */
   protected function buildDomainObject(array $row) {
     $definition = new Definition();
 
