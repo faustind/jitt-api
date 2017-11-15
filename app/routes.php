@@ -1,6 +1,9 @@
 <?php
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
 use Jitt\Domain\Word;
+use Jitt\Domain\Definition;
 use Jitt\Form\Type\WordType;
 // Home page
 $app->get('/', function () use ($app){

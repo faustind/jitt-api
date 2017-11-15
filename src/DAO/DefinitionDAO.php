@@ -94,6 +94,35 @@ class DefinitionDAO extends DAO {
   }
 
   /**
+   * Adds or updates a definition in db
+   * @var Jitt\Domain\Definition
+  */
+  public function add($definition){
+    $definitionData = array(
+      'word_id'   => $definition->getWord()->getWord_id(),
+      'content'   => $definition->getContent(),
+      'language'  => $definition->getLanguage(),
+      'source'    => $definition->getSource()
+    );
+
+    if($definition->getId()){
+      // update
+      $this->getDb()->update(
+        'definitions',
+        $definitionData,
+        array('id' => $definition->getId())
+      );
+    } else {
+      // new insertion, set the id and return $definition
+      $this->getDb()->insert('definitions', $definitionData);
+      $id = $this->getDb()->lastInsertId();
+      $definition->setId($id);
+    }
+
+    // return the definition
+    return $definition;
+  }
+  /**
    * @inheritDoc
   */
   protected function buildDomainObject(array $row) {

@@ -1,4 +1,8 @@
 <?php
+
+use Symfony\Component\HttpFoundation\Request;
+use Jitt\Domain\Definition;
+
 // return all words by matching p_word to word, kana or translation
 $app->get('/api/words/{p_word}', function ($p_word) use ($app) {
 
@@ -82,12 +86,9 @@ $app->get('/api/tags', function () use ($app) {
  return $app->json($responseData);
 });
 
-// save a new word to db
-$app->post('/api/word', function (Request $request) use ($app){
 
-});
 
-// increments the likes of definition matching id
+// increments the likes of definition matching $id
 $app->get('/api/definition/like/{id}', function($id) use ($app){
  if ($likes = $app['dao.definition']->incrementLikes($id)){
    return $app->json(array(
@@ -103,18 +104,69 @@ $app->get('/api/definition/like/{id}', function($id) use ($app){
 });
 
 // add definition for a words
-$app->post('api/definition/', function() use ($app){
+$app->post('api/definition/add', function(Request $request) use ($app){
+  if (!$request->request->has('definition')) {
+    return $app->json(
+      array("error" => "Missing parameter definition"),
+      400 // bad request response code
+    );
+  }
+
+  $definitionData = json_decode( $request->request->get('definition') );
+
+  foreach ($definitionData as $key => $value) {
+    if (empty($value)){
+      return $app->json(
+        array("error" => "Definition is missing parameter " . $key),
+        400 // bad request response code
+      );
+    }
+  }
+
+  // Here the definition wordId, content, language and source are sets
+  $newDefinition = new Definition();
+
+  $newDefinition->setWord(
+    $app['dao.word']->find($definitionData->word_id)
+  );
+  $newDefinition->setContent($definitionData->content);
+  $newDefinition->setSource($definitionData->source);
+  $newDefinition->setLanguage($definitionData->language);
+
+  $newDefinition = $app['dao.definition']->add($newDefinition);
+
+  $newDefinitionData = defData($newDefinition);
+
+  $responseData['data'] = $newDefinitionData;
+
+  return $app->json($responseData);
+});
+
+// save a new word to db
+$app->post('/api/word', function (Request $request) use ($app){
 
 });
 
-// handle options request from users
-$app->options('*', function() use ($app){
 
-});
+// Handles options request
+$app->options('{anyRoute}', function() use ($app){
+
+  // Send response with empty body and appropiate headers
+  return $app->json(array(), 204, array(
+    'Access-Control-Allow-Origin'   => '*',
+    'Access-Control-Allow-Headers'  => 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+    'Access-Control-Allow-Methods'  => 'GET, POST, PUT'
+  ));
+
+})->assert("anyRoute", ".*");
+
+
+// Helper functions
 
 function defData($definition){
   return array(
     'id' => $definition->getId(),
+    'word_id' => $definition->getWord()->getWord_id(),
     'content' => $definition->getContent(),
     'language' => $definition->getLanguage(),
     'source' => $definition->getSource(),

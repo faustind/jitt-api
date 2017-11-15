@@ -135,7 +135,7 @@ class Definition
    * @param string
   */
   public function setSource($source){
-    $this->source = $like;
+    $this->source = $source;
   }
 
   /**
