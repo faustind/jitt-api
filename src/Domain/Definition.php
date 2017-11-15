@@ -47,7 +47,7 @@ class Definition
    * @return int
   */
   public function getId(){
-    return $this->word_id ? $this->word_id : null;
+    return $this->id ? $this->id : 0;
   }
 
   /**
@@ -103,7 +103,7 @@ class Definition
    * @param int
   */
   public function setId($id){
-    $this->word_id = $id;
+    $this->id = $id;
   }
 
   /**

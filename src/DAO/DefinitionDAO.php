@@ -3,11 +3,18 @@
 namespace Jitt\DAO;
 
 use Jitt\Domain\Definition;
+use Jitt\DAO\WordDAO;
 
 class DefinitionDAO extends DAO {
 
+  /**
+   * @var WordDAO
+  */
   private $WordDAO;
 
+  /**
+   * @param WordDAO
+  */
   public function setWordDAO(WordDAO $WordDAO) {
     $this->wordDAO = $WordDAO;
   }
@@ -62,7 +69,8 @@ class DefinitionDAO extends DAO {
   public function find($id){
     $sql = "select * from definitions where id = ?";
     $row = $this->getDB()->fetchAssoc($sql, array($id));
-    if($row){
+    if($row && $row['word_id']){
+      $row['word'] = $this->wordDAO->find($row['word_id']);
       return $this->buildDomainObject($row);
     } else {
       throw new \Exception("No Definition Matching id " . $id, 1);
@@ -116,7 +124,7 @@ class DefinitionDAO extends DAO {
       // new insertion, set the id and return $definition
       $this->getDb()->insert('definitions', $definitionData);
       $id = $this->getDb()->lastInsertId();
-      $definition->setId($id);
+      $definition = $this->find($id);
     }
 
     // return the definition

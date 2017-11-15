@@ -98,7 +98,7 @@ $app->get('/api/definition/like/{id}', function($id) use ($app){
    ));
  } else {
    return $app->json(array(
-     'error' => 'Couldn\'t increment likes of definition with id '. $id
+     'error' => 'Cannot increment likes of definition with id '. $id
    ));
  }
 });
@@ -112,7 +112,7 @@ $app->post('api/definition/add', function(Request $request) use ($app){
     );
   }
 
-  $definitionData = json_decode( $request->request->get('definition') );
+  $definitionData = json_decode( $request->request->get('definition'), true );
 
   foreach ($definitionData as $key => $value) {
     if (empty($value)){
@@ -127,11 +127,11 @@ $app->post('api/definition/add', function(Request $request) use ($app){
   $newDefinition = new Definition();
 
   $newDefinition->setWord(
-    $app['dao.word']->find($definitionData->word_id)
+    $app['dao.word']->find($definitionData['word_id'])
   );
-  $newDefinition->setContent($definitionData->content);
-  $newDefinition->setSource($definitionData->source);
-  $newDefinition->setLanguage($definitionData->language);
+  $newDefinition->setContent($definitionData['content']);
+  $newDefinition->setSource($definitionData['source']);
+  $newDefinition->setLanguage($definitionData['language']);
 
   $newDefinition = $app['dao.definition']->add($newDefinition);
 
