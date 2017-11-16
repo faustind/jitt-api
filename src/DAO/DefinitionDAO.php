@@ -124,11 +124,11 @@ class DefinitionDAO extends DAO {
       // new insertion, set the id and return $definition
       $this->getDb()->insert('definitions', $definitionData);
       $id = $this->getDb()->lastInsertId();
-      $definition = $this->find($id);
+      $insertedDefinition = $this->find($id);
     }
 
     // return the definition
-    return $definition;
+    return $insertedDefinition;
   }
   /**
    * @inheritDoc

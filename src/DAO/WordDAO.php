@@ -8,6 +8,7 @@ class WordDAO extends DAO {
 
   /**
    * Finds all words in db
+   * Definitions are grouped by language
    * @return Jitt\Domain\Word[]
   */
   public function findAll(){
@@ -65,13 +66,14 @@ class WordDAO extends DAO {
   /**
    * Saves the word in db. if the word has an id, update it.
    * @param Jitt\Domain\Word
+   * @return int the id of the word in db
   */
   public function saveWord($word){
     $wordData = array(
       'word' => $word->getWord(),
       'kana' => $word->getKana(),
       'translation' => $word->getTranslation(),
-      'saved_date' => date("Y-m-d H:i:s"),
+      //'saved_date' => date("Y-m-d H:i:s"),
     );
 
     if ($word->getWord_id()){
@@ -91,11 +93,13 @@ class WordDAO extends DAO {
     $newTags = $word->getTags();
     $formerTags = $word->getFormerTags();
 
+    $tagsToRemoveForWord = array();
+    $tagsToInsertForWord = array();
+
     // all of the new tags that weren't present
     if (!empty($newTags) && empty($formerTags)){
       // insert newTags and remove nothing
       $tagsToInsertForWord = $newTags;
-      $tagsToRemoveForWord = array();
 
     } else if(!empty($newTags) && !empty($formerTags)) {
       // insert tags in newTags not in formerTags
@@ -105,7 +109,6 @@ class WordDAO extends DAO {
 
     } else if(empty($newTags) && !empty($formerTags)) {
       // insert nothing and remove all former tags
-      $tagsToInsertForWord = array();
       $tagsToRemoveForWord = $formerTags;
     } else if(empty($newTags) && empty($formerTags)) {
       // nothing to do
@@ -122,7 +125,6 @@ class WordDAO extends DAO {
           'word_id' => $word->getWord_id(),
           'tag_id' => $tag->getId()
         ));
-
       }
     }
 
@@ -137,10 +139,10 @@ class WordDAO extends DAO {
           'word_id' => $word->getWord_id(),
           'tag_id' => $tag->getId()
         ));
-
       }
-
     }
+
+    return $word->getWord_id();
   }
 
   /**

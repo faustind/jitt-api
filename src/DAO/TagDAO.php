@@ -17,8 +17,7 @@ class TagDAO extends DAO
       $tags = array();
 
       foreach ($results as $row) {
-        $id = $row["tag_id"];
-        $tags[$id] = $this->buildDomainObject($row);
+        $tags[] = $this->buildDomainObject($row);
       }
       return $tags;
     }
@@ -28,9 +27,9 @@ class TagDAO extends DAO
      * @param int the id of the tag to look for in db
      * @return Jitt\Domain\Tag[]|\Exception
     */
-    public function findById($id) {
+    public function find($id) {
       $sql = "select * from tags where tag_id = ?";
-      $row = $this->getDB()->fetchAll($sql, array($id));
+      $row = $row = $this->getDB()->fetchAssoc($sql, array($id));
       if($row){
         return $this->buildDomainObject($row);
       } else {
@@ -54,8 +53,7 @@ class TagDAO extends DAO
       $tags = array();
 
       foreach ($results as $row) {
-        $id = $row["tag_id"];
-        $tags[$id] = $this->buildDomainObject($row);
+        $tags[] = $this->buildDomainObject($row);
       }
       return $tags;
     }
