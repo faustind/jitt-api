@@ -46,8 +46,8 @@ class WordDAO extends DAO {
    * @return Jitt\Domain\Word[]
   */
   public function findMatch($word){
-    $find = $this->getDB()->prepare("select * from words where word = :wd or kana = :wd or translation = :wd");
-    $find->execute(array(':wd' => $word));
+    $find = $this->getDB()->prepare("select * from words where word like :wd or kana like :wd or translation like :wd");
+    $find->execute(array(':wd' => '%'.$word.'%'));
     $results = $find->fetchAll();
 
     if($results){

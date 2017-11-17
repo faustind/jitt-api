@@ -6,9 +6,17 @@ use Jitt\Domain\Word;
 use Jitt\Domain\Tag;
 
 // return all words by matching p_word to word, kana or translation
-$app->get('/api/words/{p_word}', function ($p_word) use ($app) {
+$app->get('/api/words/match/{p_word}', function ($p_word) use ($app) {
 
-    $words = $app['dao.word']->findMatch($p_word);
+
+    try {
+        $words = $app['dao.word']->findMatch($p_word);
+    } catch (\Exception $e){
+      return $app->json(array(
+        'error' => $e.getMessage()
+      ), 404, array('Access-Control-Allow-Origin' => '*'));
+    }
+
 
     foreach ($words as $word) {
 
@@ -20,8 +28,10 @@ $app->get('/api/words/{p_word}', function ($p_word) use ($app) {
       $definitions = $app['dao.definition']->findAllForWord($word->getWord_id());
 
       // prepare definition's data necessary to the response
-      $definitions['eng_definitions'] = array_map("defData", $definitions['eng_definitions']);
-      $definitions['jp_definitions'] = array_map("defData", $definitions['jp_definitions']);
+      $definitions = array_merge(
+        array_map("defData", $definitions['eng_definitions']),
+        array_map("defData", $definitions['jp_definitions'])
+      );
 
 
       $responseData['data'][] = array (
@@ -35,7 +45,14 @@ $app->get('/api/words/{p_word}', function ($p_word) use ($app) {
         );
     }
 
-     return $app->json($responseData);
+     return $app->json(
+       $responseData, 200,
+       array(
+         'Access-Control-Allow-Origin'   => '*',
+         // 'Access-Control-Allow-Headers'  => 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+         // 'Access-Control-Allow-Methods'  => 'GET, POST, PUT'
+       )
+     );
 });
 
 // return all words in db
@@ -52,8 +69,10 @@ $app->get('/api/words', function () use ($app) {
     $definitions = $app['dao.definition']->findAllForWord($word->getWord_id());
 
     // prepare definition's data necessary to the response
-    $definitions['eng_definitions'] = array_map("defData", $definitions['eng_definitions']);
-    $definitions['jp_definitions'] = array_map("defData", $definitions['jp_definitions']);
+    $definitions = array_merge(
+      array_map("defData", $definitions['eng_definitions']),
+      array_map("defData", $definitions['jp_definitions'])
+    );
 
     $responseData['data'][] = array (
         'word_id' => $word->getWord_id(),
