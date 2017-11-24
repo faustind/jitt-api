@@ -21,44 +21,46 @@ class DefinitionDAO extends DAO {
 
   /**
    * Finds all definitions for a word
+   * Will return null if no definitions is found for $wordId
    * @param int the id of the word which definitions to look for
-   * @return Jitt\Domain\Definition[]
+   * @return Jitt\Domain\Definition[]|null
   */
   public function findAllForWord($wordId){
     $sql = "select * from definitions where word_id = ? group by language";
     $results = $this->getDb()->fetchAll($sql, array($wordId));
 
-    $definitons = array();
-    $word = $this->wordDAO->find($wordId);
+    if ($results) {
+      $definitons = array();
+      $word = $this->wordDAO->find($wordId);
 
-    foreach ($results as $row) {
-      $id = $row["id"];
-      $row["word"] = $word;
-      $definitions[$id] = $this->buildDomainObject($row);
-    }
-
-    // group definitions by language
-
-    $jpDefs = array();
-    $engDefs = array();
-
-    foreach ($definitions as $definition) {
-      if ($definition->getLanguage() == 'japanese'){
-        $jpDefs[] = $definition;
-      } else {
-        $engDefs[] = $definition;
+      foreach ($results as $row) {
+        $id = $row["id"];
+        $row["word"] = $word;
+        $definitions[$id] = $this->buildDomainObject($row);
       }
+
+      // group definitions by language
+      $jpDefs = array();
+      $engDefs = array();
+
+      foreach ($definitions as $definition) {
+        if ($definition->getLanguage() == 'japanese'){
+          $jpDefs[] = $definition;
+        } else {
+          $engDefs[] = $definition;
+        }
+      }
+
+      $definitions = array(
+        'eng_definitions' => $engDefs,
+        'jp_definitions'  => $jpDefs
+      );
+
+      // return definitions grouped by language
+      return $definitions;
+    } else { // no definitions is registered for given $wordId
+      return null;
     }
-
-
-
-    $definitions = array(
-      'eng_definitions' => $engDefs,
-      'jp_definitions'  => $jpDefs
-    );
-
-    // return definitions grouped by language
-    return $definitions;
   }
 
   /**
@@ -79,20 +81,19 @@ class DefinitionDAO extends DAO {
 
   /**
    * Increments the definitions.likes column in the db
-   * and return the updated value or null if no definition matches $definitionId
-   * @return int|null
+   * and return the updated definition data
+   * or null if no definition matches $definitionId
+   * @return Definition
   */
   public function incrementLikes($definitionId){
     $increment = $this->getDb()->prepare('update definitions
-      set likes = likes + 1
-      where id = ?');
+      set likes = likes + 1 where id = ?');
 
       $incremented = $increment->execute(array($definitionId));
 
       if ($incremented){
         try {
-          $def = $this->find($definitionId);
-          return $def->getLikes();
+          return $this->find($definitionId);          
         } catch (\Exception $e){
           return null;
         }

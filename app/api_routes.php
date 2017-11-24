@@ -13,7 +13,7 @@ $app->get('/api/words/match/{p_word}', function ($p_word) use ($app) {
         $words = $app['dao.word']->findMatch($p_word);
     } catch (\Exception $e){
       return $app->json(array(
-        'error' => $e.getMessage()
+        'error' => $e->getMessage()
       ), 404, array('Access-Control-Allow-Origin' => '*'));
     }
 
@@ -24,14 +24,15 @@ $app->get('/api/words/match/{p_word}', function ($p_word) use ($app) {
       // map tags to their data usin tagData() helper defined at the end of the file
       $tags = array_map("tagData", $tags);
 
-
       $definitions = $app['dao.definition']->findAllForWord($word->getWord_id());
 
       // prepare definition's data necessary to the response
-      $definitions = array_merge(
-        array_map("defData", $definitions['eng_definitions']),
-        array_map("defData", $definitions['jp_definitions'])
-      );
+      if ($definitions){
+        $definitions = array_merge(
+          array_map("defData", $definitions['eng_definitions']),
+          array_map("defData", $definitions['jp_definitions'])
+        );
+      }
 
 
       $responseData['data'][] = array (
@@ -49,8 +50,6 @@ $app->get('/api/words/match/{p_word}', function ($p_word) use ($app) {
        $responseData, 200,
        array(
          'Access-Control-Allow-Origin'   => '*',
-         // 'Access-Control-Allow-Headers'  => 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
-         // 'Access-Control-Allow-Methods'  => 'GET, POST, PUT'
        )
      );
 });
@@ -111,11 +110,9 @@ $app->get('/api/tags', function () use ($app) {
 
 // increments the likes of definition matching $id
 $app->get('/api/definition/like/{id}', function($id) use ($app){
- if ($likes = $app['dao.definition']->incrementLikes($id)){
+ if ($def = $app['dao.definition']->incrementLikes($id)){
    return $app->json(array(
-     'data' => array(
-       'likes' => $likes
-     )
+     'data' => array('definition' => defData($def))
    ));
  } else {
    return $app->json(array(
