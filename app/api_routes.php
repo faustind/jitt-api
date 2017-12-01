@@ -84,7 +84,7 @@ $app->get('/api/words', function () use ($app) {
       );
   }
 
-   return $app->json($responseData);
+   return $app->json($responseData, 200, array('Access-Control-Allow-Origin' => '*'));
 });
 
 
@@ -103,7 +103,7 @@ $app->get('/api/tags', function () use ($app) {
     );
   }
 
- return $app->json($responseData);
+ return $app->json($responseData, 200, array('Access-Control-Allow-Origin' => '*'));
 });
 
 
@@ -111,13 +111,15 @@ $app->get('/api/tags', function () use ($app) {
 // increments the likes of definition matching $id
 $app->get('/api/definition/like/{id}', function($id) use ($app){
  if ($def = $app['dao.definition']->incrementLikes($id)){
-   return $app->json(array(
-     'data' => array('definition' => defData($def))
-   ));
+   return $app->json(
+     array('data' => array('definition' => defData($def))),
+     200,
+     array('Access-Control-Allow-Origin' => '*')
+   );
  } else {
    return $app->json(array(
      'error' => 'Cannot increment likes of definition with id '. $id
-   ));
+   ), 400, array('Access-Control-Allow-Origin' => '*'));
  }
 });
 
@@ -126,7 +128,8 @@ $app->post('api/definition/add', function(Request $request) use ($app){
   if (!$request->request->has('definition')) {
     return $app->json(
       array("error" => "Missing parameter definition"),
-      400 // bad request response code
+      400, // bad request response code
+      array('Access-Control-Allow-Origin' => '*')
     );
   }
 
@@ -136,7 +139,8 @@ $app->post('api/definition/add', function(Request $request) use ($app){
     if (empty($value)){
       return $app->json(
         array("error" => "Definition is missing key " . $key),
-        400 // bad request response code
+        400, // bad request response code
+        array('Access-Control-Allow-Origin' => '*')
       );
     }
   }
@@ -157,7 +161,7 @@ $app->post('api/definition/add', function(Request $request) use ($app){
 
   $responseData['data']['definition'] = $newDefinitionData;
 
-  return $app->json($responseData);
+  return $app->json($responseData, 200, array('Access-Control-Allow-Origin' => '*'));
 });
 
 // save a new word to db
@@ -165,7 +169,8 @@ $app->post('/api/word/add', function (Request $request) use ($app){
   if (!$request->request->has('word')){
     return $app->json(
       array("error" => "Missing parameter word"),
-      400 // bad request response code
+      400, // bad request response code
+      array('Access-Control-Allow-Origin' => '*')
     );
   }
 
@@ -175,7 +180,8 @@ $app->post('/api/word/add', function (Request $request) use ($app){
   if(!$wordData["word"] || empty($wordData["word"])){
     return $app->json(
       array("error" => "Parameter word is missing key word"),
-      400 // bad request response code
+      400, // bad request response code
+      array('Access-Control-Allow-Origin' => '*')
     );
   }
 
@@ -190,7 +196,8 @@ $app->post('/api/word/add', function (Request $request) use ($app){
         ) {
           return $app->json(
             array("error" => "Invalid data type in tags at index ". $index),
-            400 // bad request response code
+            400, // bad request response code
+            array('Access-Control-Allow-Origin' => '*')
           );
       }
       $checkedTags[] = $app['dao.tag']->find($tag['tag_id']);
@@ -209,7 +216,8 @@ $app->post('/api/word/add', function (Request $request) use ($app){
         ) {
           return $app->json(
             array("error" => "Invalid data type in defininitions at index ". $index),
-            400 // bad request response code
+            400, // bad request response code
+            array('Access-Control-Allow-Origin' => '*')
           );
       }
     }
@@ -241,7 +249,8 @@ $app->post('/api/word/add', function (Request $request) use ($app){
       array(
         'error' => "Error while saving word : " .$e->getMessage(),
       ),
-      500 // internal server error
+      500, // internal server error
+      array('Access-Control-Allow-Origin' => '*')
     );
   }
 
@@ -271,7 +280,7 @@ $app->post('/api/word/add', function (Request $request) use ($app){
   }
 
   // Send response: informations on the insertedWord
-  return $app->json($responseData);
+  return $app->json($responseData, 200, array('Access-Control-Allow-Origin' => '*'));
 });
 
 
