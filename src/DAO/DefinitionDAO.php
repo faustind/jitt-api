@@ -26,7 +26,7 @@ class DefinitionDAO extends DAO {
    * @return Jitt\Domain\Definition[]|null
   */
   public function findAllForWord($wordId){
-    $sql = "select * from definitions where word_id = ? group by language";
+    $sql = "select * from definitions where word_id = ?";
     $results = $this->getDb()->fetchAll($sql, array($wordId));
 
     if ($results) {
@@ -93,7 +93,7 @@ class DefinitionDAO extends DAO {
 
       if ($incremented){
         try {
-          return $this->find($definitionId);          
+          return $this->find($definitionId);
         } catch (\Exception $e){
           return null;
         }
