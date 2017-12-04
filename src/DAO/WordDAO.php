@@ -117,6 +117,7 @@ class WordDAO extends DAO {
     // remove word_tag references for tags to remove
     if (!empty($tagsToRemoveForWord)){
       foreach ($tagsToRemoveForWord as $tag) {
+        // TODO: Move the preparation before foreach
         $delete = $this->getDb()
           ->prepare('delete from word_tag
                     where word_id = :word_id and tag_id = :tag_id');
@@ -131,6 +132,7 @@ class WordDAO extends DAO {
     // insert word_tag references for tags to insert
     if (!empty($tagsToInsertForWord)){
       foreach ($tagsToInsertForWord as $tag) {
+        // TODO: Move the preparation before foreach
         $insert = $this->getDb()
           ->prepare('insert into word_tag (word_id, tag_id)
         values (:word_id, :tag_id)');

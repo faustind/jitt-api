@@ -26,7 +26,7 @@ class DefinitionDAO extends DAO {
    * @return Jitt\Domain\Definition[]|null
   */
   public function findAllForWord($wordId){
-    $sql = "select * from definitions where word_id = ?";
+    $sql = "select * from definitions where word_id = ? order by likes desc";
     $results = $this->getDb()->fetchAll($sql, array($wordId));
 
     if ($results) {
@@ -85,9 +85,14 @@ class DefinitionDAO extends DAO {
    * or null if no definition matches $definitionId
    * @return Definition
   */
-  public function incrementLikes($definitionId){
-    $increment = $this->getDb()->prepare('update definitions
-      set likes = likes + 1 where id = ?');
+  public function incrementLikes($definitionId, $unlike = false){
+
+
+    $increment = $unlike
+      ? $this->getDb()->prepare('update definitions
+      set likes = likes - 1 where id = ?')
+      : $this->getDb()->prepare('update definitions
+        set likes = likes + 1 where id = ?') ;
 
       $incremented = $increment->execute(array($definitionId));
 

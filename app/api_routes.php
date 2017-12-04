@@ -98,7 +98,7 @@ $app->get('/api/tags', function () use ($app) {
 
   foreach ($tags as $tag) {
     $responseData['data'][] = array(
-        'id' => $tag->getId(),
+        'tag_id' => $tag->getId(),
         'title' => $tag->getTitle()
     );
   }
@@ -109,8 +109,8 @@ $app->get('/api/tags', function () use ($app) {
 
 
 // increments the likes of definition matching $id
-$app->get('/api/definition/like/{id}', function($id) use ($app){
- if ($def = $app['dao.definition']->incrementLikes($id)){
+$app->get('/api/definition/like/{id}/{minus}', function($id, $minus) use ($app){
+ if ($def = $app['dao.definition']->incrementLikes($id, $minus)){
    return $app->json(
      array('data' => array('definition' => defData($def))),
      200,
@@ -121,7 +121,7 @@ $app->get('/api/definition/like/{id}', function($id) use ($app){
      'error' => 'Cannot increment likes of definition with id '. $id
    ), 400, array('Access-Control-Allow-Origin' => '*'));
  }
-});
+})->value('minus', false);
 
 // add definition for a words
 $app->post('api/definition/add', function(Request $request) use ($app){
@@ -184,6 +184,13 @@ $app->post('/api/word/add', function (Request $request) use ($app){
       array('Access-Control-Allow-Origin' => '*')
     );
   }
+  if(!$wordData["translation"] || empty($wordData["translation"])){
+    return $app->json(
+      array("error" => "Parameter word is missing key translation"),
+      400, // bad request response code
+      array('Access-Control-Allow-Origin' => '*')
+    );
+  }
 
   // Check validity of tags
   $hasTags = false;
@@ -230,12 +237,10 @@ $app->post('/api/word/add', function (Request $request) use ($app){
   $word = new Word();
 
   $word->setWord($wordData['word']);
-  // Set kana and tranlation and tags if present
+  $word->setTranslation($wordData['translation']);
+  // Set kana and tags if present
   if ($wordData['kana'] && !empty($wordData['kana'])){
     $word->setKana($wordData['kana']);
-  }
-  if ($wordData['translation'] && !empty($wordData['translation'])){
-    $word->setTranslation($wordData['translation']);
   }
   if($hasTags && !empty($checkedTags)){
     $word->setTags($checkedTags);
