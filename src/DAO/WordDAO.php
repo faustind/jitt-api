@@ -63,6 +63,33 @@ class WordDAO extends DAO {
     }
   }
 
+
+  public function wordsHavingTags($tagsId){
+    $sql = "SELECT words.* from words
+    	inner JOIN word_tag on word_tag.word_id = words.word_id WHERE word_tag.tag_id in (". implode(',', $tagsId).")
+      GROUP by word_tag.word_id
+    	 having COUNT(word_tag.tag_id) >= ?";
+
+    $tags_tt = count($tagsId);
+    $find = $this->getDB()->prepare($sql);
+    //$find->bindValue(':num', $tags_tt, \PDO::PARAM_INT);
+    $find->execute(
+      array(sizeof($tagsId))
+    );
+    $results = $find->fetchAll();
+
+    if($results){
+      $words = array();
+      foreach ($results as $row) {
+        $word_id = $row["word_id"];
+        $words[$word_id] = $this->buildDomainObject($row);
+      }
+      return $words;
+
+    } else {
+      throw new \Exception("No Word Matching " . $word, 1);
+    }
+  }
   /**
    * Saves the word in db. if the word has an id, update it.
    * @param Jitt\Domain\Word

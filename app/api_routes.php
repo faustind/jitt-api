@@ -88,6 +88,65 @@ $app->get('/api/words', function () use ($app) {
 });
 
 
+// return all words whose tags match the request params
+$app->get('/api/words/with_tags/{tags_id}', function ($tags_id) use ($app) {
+
+  if (empty($tags_id)) {
+    return $app->json(
+      array("error" => "Missing parameters: tags_id"),
+      400, // bad request response code
+      array('Access-Control-Allow-Origin' => '*')
+    );
+  }
+
+  $filters = explode(",", $tags_id);
+
+  try {
+      $words = $app['dao.word']->wordsHavingTags($filters);
+  } catch (\Exception $e){
+    return $app->json(array(
+      'error' => $e->getMessage()
+    ), 404, array('Access-Control-Allow-Origin' => '*'));
+  }
+
+  foreach ($words as $word) {
+
+    $tags = $app['dao.tag']->findTagsForWordId($word->getWord_id());
+    // map tags to their data usin tagData() helper defined at the end of the file
+    $tags = array_map("tagData", $tags);
+
+    $definitions = $app['dao.definition']->findAllForWord($word->getWord_id());
+
+    // prepare definition's data necessary to the response
+    if ($definitions){
+      $definitions = array_merge(
+        array_map("defData", $definitions['eng_definitions']),
+        array_map("defData", $definitions['jp_definitions'])
+      );
+    }
+
+    $responseData['data'][] = array (
+        'word_id' => $word->getWord_id(),
+        'word' => $word->getWord(),
+        'kana' => $word->getKana(),
+        'translation' => $word->getTranslation(),
+        'saved_date' => $word->getSaved_date(),
+        'tags' => $tags,
+        'definitions' => $definitions
+      );
+  }
+
+   return $app->json(
+     $responseData, 200,
+     array(
+       'Access-Control-Allow-Origin'   => '*',
+     )
+   );
+
+  return $app->json($responseData, 200, array('Access-Control-Allow-Origin' => '*'));
+});
+
+
 // return all tags in db
 $app->get('/api/tags', function () use ($app) {
   $tags = $app['dao.tag']->findAll();
@@ -105,8 +164,6 @@ $app->get('/api/tags', function () use ($app) {
 
  return $app->json($responseData, 200, array('Access-Control-Allow-Origin' => '*'));
 });
-
-
 
 // increments the likes of definition matching $id
 $app->get('/api/definition/like/{id}/{minus}', function($id, $minus) use ($app){

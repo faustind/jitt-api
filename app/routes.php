@@ -6,11 +6,21 @@ use Jitt\Domain\Word;
 use Jitt\Domain\Definition;
 use Jitt\Form\Type\WordType;
 // Home page
-$app->get('/', function () use ($app){
+$app->get('/words/{search}', function ($search) use ($app){
+    $words = [];
 
-    $words = $app['dao.word']->findall();
+    if ($search){
+      $words = $app['dao.word']->findMatch($search);
+    } else {
+      $words = $app['dao.word']->findall();
+    }
+
+    foreach ($words as $word) {
+        $wordTags = $app['dao.tag']->findTagsForWordId($word->getWord_id());
+        $word->setTags($wordTags);
+    }
     return $app['twig']->render('words-list.html.twig',array('words' => $words));
-})->bind('word-list');
+})->bind('word-list')->value('search', null);
 
 $app->match('/word-detail/{id}', function ($id, Request $request) use ($app){
     $word = $app['dao.word']->find($id);

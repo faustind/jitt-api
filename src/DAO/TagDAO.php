@@ -58,6 +58,15 @@ class TagDAO extends DAO
       return $tags;
     }
 
+    public function countTagsForWordId($id){
+      $tags = $this->findTagsForWordId($id);
+      if(empty($tags) || !is_array($tags)){
+        return 0;
+      } else {
+        return count($tags);
+      }
+    }
+
     /**
      * @inheritDoc
     */

@@ -4,9 +4,9 @@
 $app['db.options'] = array(
     'driver'   => 'pdo_mysql',
     'charset'  => 'utf8',
-    'host'     => 'iseifu.dip.jp',
+    'host'     => 'localhost',
     'port'     => '3306',
-    'dbname'   => 'honka-1_jitt',
-    'user'     => 'honka-1',
-    'password' => '1nen',
+    'dbname'   => 'jittdb',
+    'user'     => 'faustin',
+    'password' => '123456',
 );

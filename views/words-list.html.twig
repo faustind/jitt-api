@@ -9,14 +9,20 @@
     <h1>Word List</h1>
   </div>
   <div class="col-sm-12 col-md-6">
-    <form class="form-inline mt-2 mr-0" action="" method="">
+    <div class="form-inline mt-2 mr-0">
       <div class="input-group mr-0">
-        <input type="text" class="form-control" name="searchWord" value="" placeholder="Search for...">
+        <input type="text" class="form-control" name="searchWord" id="searchWord" value="" placeholder="Search for..."
+        onkeyup="searchFieldKeyUp(event)">
         <span class="input-group-btn">
-          <button type="button" name="button" class="btn btn-secondary"><i class="fa fa-search"></i></button>
+          <button type="button" name="submitSearch" class="btn btn-secondary"
+           onclick="$(function(){
+             window.location.href = '/words/'+$('#searchWord').val()
+           })">
+            <i class="fa fa-search"></i>
+          </button>
         </span>
       </div>
-    </form>
+    </div>
   </div>
 </div>
 <div class="row">
@@ -24,6 +30,7 @@
   <thead class="thead-inverse">
     <tr>
       <th>#</th>
+      <th></th>
       <th>Word</th>
       <th>Kana</th>
       <th>Translation</th>
@@ -34,7 +41,13 @@
 
   {% for word in words %}
         <tr>
+
           <th scope="row">{{ word.word_id}}</th>
+          <td>
+            {% if word.tags %}
+              <i class="fa fa-tags"></i>
+            {% endif %}
+          </td>
           <td>{{ word.word }}</td>
           <td>{{ word.kana }}</td>
           <td>{{ word.translation }}</td>
@@ -48,5 +61,13 @@
       </tbody>
   </table>
 </div>
+
+<script>
+    function searchFieldKeyUp(ev){
+      if (ev.keyCode === 13) {
+        window.location.href = '/words/'+$('#searchWord').val()
+      }
+    }
+</script>
 
 {% endblock %}
